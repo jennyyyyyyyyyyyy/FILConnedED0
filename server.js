@@ -13,6 +13,9 @@ console.log("Dropbox Redirect URI:", process.env.DROPBOX_REDIRECT_URI);
 app.get("/oauth2redirect", async (req, res) => {
   const code = req.query.code;
 
+  // Log the authorization code to ensure it's received
+  console.log("Authorization code:", code);
+
   if (!code) {
     return res.status(400).send("Authorization code missing.");
   }
@@ -32,6 +35,9 @@ app.get("/oauth2redirect", async (req, res) => {
         },
       }
     );
+
+    // Log the response data from Dropbox to check if the token was returned successfully
+    console.log("Token response:", response.data);
 
     // Send the access token back as a response
     const accessToken = response.data.access_token;
