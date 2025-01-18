@@ -1,9 +1,8 @@
-require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 
 const app = express();
-const port = process.env.PORT || 5000; // Use the port from environment or default to 5000
+const port = process.env.PORT || 5000; // Use Render's PORT or fallback to 5000
 
 // Endpoint to serve the OAuth Redirect URI
 app.get("/oauth2redirect", async (req, res) => {
@@ -22,9 +21,9 @@ app.get("/oauth2redirect", async (req, res) => {
         params: {
           code: code,
           grant_type: "authorization_code",
-          client_id: process.env.DROPBOX_CLIENT_ID,
-          client_secret: process.env.DROPBOX_CLIENT_SECRET,
-          redirect_uri: process.env.DROPBOX_REDIRECT_URI, // Make sure this uses the correct URL for Render
+          client_id: process.env.DROPBOX_CLIENT_ID, // Use Render environment variable
+          client_secret: process.env.DROPBOX_CLIENT_SECRET, // Use Render environment variable
+          redirect_uri: process.env.DROPBOX_REDIRECT_URI, // Use Render environment variable
         },
       }
     );
@@ -43,9 +42,5 @@ app.get("/oauth2redirect", async (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(
-    `Server running on ${
-      process.env.PORT ? `port ${process.env.PORT}` : "http://localhost:5000"
-    }`
-  );
+  console.log(`Server running on ${process.env.PORT || 'http://localhost:5000'}`);
 });
