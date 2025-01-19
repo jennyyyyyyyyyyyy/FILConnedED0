@@ -39,11 +39,11 @@ app.get("/oauth2redirect", async (req, res) => {
     // Log the response data from Dropbox to check if the token was returned successfully
     console.log("Token response:", response.data);
 
-    // Send the access token back as a JSON response
+    // Get the access token from the response
     const accessToken = response.data.access_token;
-    res.status(200).json({
-      access_token: accessToken,
-    });
+
+    // Redirect the user back to the app with the access token in the query parameter
+    res.redirect(`filconneded://oauth2redirect?access_token=${accessToken}`);
   } catch (error) {
     console.error("Error exchanging code for access token:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to exchange code for access token." });
