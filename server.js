@@ -20,7 +20,7 @@ app.get("/oauth2redirect", async (req, res) => {
         params: {
           code: code,
           grant_type: "authorization_code",
-          client_id: process.env.DROPBOX_CLIENT_ID,   // Set these variables in your .env file
+          client_id: process.env.DROPBOX_CLIENT_ID,
           client_secret: process.env.DROPBOX_CLIENT_SECRET,
           redirect_uri: process.env.DROPBOX_REDIRECT_URI,  // Your redirect URI
         },
@@ -30,10 +30,9 @@ app.get("/oauth2redirect", async (req, res) => {
     // Extract the access token from Dropbox's response
     const accessToken = response.data.access_token;
 
-    // Send the access token to the Android app
-    res.status(200).json({
-      access_token: accessToken,
-    });
+    // Redirect to the mobile app with the access token
+    const redirectUri = `filconnected://oauth2redirect?access_token=${accessToken}`; // Use your custom scheme
+    res.redirect(redirectUri); // Redirect to the custom URL scheme
   } catch (error) {
     console.error("Error exchanging code for access token:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to exchange code for access token." });
