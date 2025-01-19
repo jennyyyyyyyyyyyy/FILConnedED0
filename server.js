@@ -17,7 +17,7 @@ app.get("/oauth2redirect", async (req, res) => {
   console.log("Authorization code:", code);
 
   if (!code) {
-    return res.status(400).send("Authorization code missing.");
+    return res.status(400).json({ error: "Authorization code missing." });
   }
 
   try {
@@ -39,16 +39,18 @@ app.get("/oauth2redirect", async (req, res) => {
     // Log the response data from Dropbox to check if the token was returned successfully
     console.log("Token response:", response.data);
 
-    // Send the access token back as a response
+    // Send the access token back as a JSON response
     const accessToken = response.data.access_token;
-    res.status(200).send(`Access Token: ${accessToken}`);
+    res.status(200).json({
+      access_token: accessToken,
+    });
   } catch (error) {
     console.error("Error exchanging code for access token:", error.response?.data || error.message);
-    res.status(500).send("Failed to exchange code for access token.");
+    res.status(500).json({ error: "Failed to exchange code for access token." });
   }
 });
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server running on ${process.env.PORT || 'http://localhost:5000'}`);
+  console.log(`Server running on ${process.env.PORT || "http://localhost:5000"}`);
 });
