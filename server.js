@@ -30,6 +30,9 @@ app.get("/oauth2redirect", async (req, res) => {
     // Extract the access token from Dropbox's response
     const accessToken = response.data.access_token;
 
+    // Log the access token received from Dropbox
+    console.log("Access Token received:", accessToken);
+
     // Redirect to the mobile app with the access token
     const redirectUri = `filconnected://oauth2redirect?access_token=${accessToken}`; // Use your custom scheme
     res.redirect(redirectUri); // Redirect to the custom URL scheme
