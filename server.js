@@ -5,7 +5,7 @@ const fetch = require('isomorphic-fetch'); // Required for Node.js
 
 const app = express();
 const port = process.env.PORT || 5000;
-	@@ -35,19 +33,6 @@ app.get("/oauth2redirect", async (req, res) => {
+app.get("/oauth2redirect", async (req, res) => {
     // Log the access token received from Dropbox
     console.log("Access Token received:", accessToken);
 
