@@ -3,7 +3,7 @@ const axios = require("axios");
 require("dotenv").config(); // Load environment variables
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5000; // Use Render's assigned port or default to 5000 locally
 
 // Long-lived access token stored in an environment variable
 const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
