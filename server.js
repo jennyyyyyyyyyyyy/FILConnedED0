@@ -13,14 +13,22 @@ if (!accessToken) {
   process.exit(1);
 }
 
+// Root route
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to the FILConnectED API!",
+    endpoints: {
+      test: "GET /test - Test Dropbox API integration",
+    },
+  });
+});
+
+// Test Dropbox API
 app.get("/test", async (req, res) => {
   try {
-    // Example Dropbox API call using the long-lived token
     const response = await axios.post(
       "https://api.dropboxapi.com/2/files/list_folder",
-      {
-        path: "", // Root folder
-      },
+      { path: "" }, // Root folder
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -28,7 +36,6 @@ app.get("/test", async (req, res) => {
         },
       }
     );
-
     res.json(response.data);
   } catch (error) {
     console.error("Error calling Dropbox API:", error.response?.data || error.message);
@@ -36,6 +43,7 @@ app.get("/test", async (req, res) => {
   }
 });
 
+// Start the server
 app.listen(port, () => {
-  console.log(`Server running on ${process.env.PORT || "http://localhost:5000"}`);
+  console.log(`Server running on port ${port}`);
 });
