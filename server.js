@@ -6,6 +6,7 @@ const fetch = require('isomorphic-fetch'); // Required for Node.js
 const app = express();
 const port = process.env.PORT || 5000;
 app.get("/oauth2redirect", async (req, res) => {
+  try {
     // Log the access token received from Dropbox
     console.log("Access Token received:", accessToken);
 
@@ -30,6 +31,7 @@ app.get("/oauth2redirect", async (req, res) => {
     res.status(500).json({ error: "Failed to exchange code for access token." });
   }
 });
+
 app.listen(port, () => {
   console.log(`Server running on ${process.env.PORT || "http://localhost:5000"}`);
 });
