@@ -1,52 +1,58 @@
-const express = require("express");
-const axios = require("axios");
-const cors = require("cors");
-require("dotenv").config(); // Ensure you have dotenv to load environment variables
-
+const express = require('express');
+const cors = require('cors'); // Add this line
+const axios = require('axios');
+const querystring = require('querystring');
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3000;
 
 // Enable CORS
-app.use(cors());
+app.use(cors()); // Add this line
 
-// Endpoint to handle the OAuth2 redirect
-app.get("/oauth2redirect", async (req, res) => {
-  const code = req.query.code; // Get the authorization code from query params
+// OAuth2 endpoints
+const DROPBOX_AUTH_URL = 'https://www.dropbox.com/oauth2/authorize';
+const DROPBOX_TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token';
 
-  if (!code) {
-    return res.status(400).json({ error: "Authorization code missing." });
+// Redirect URI
+const REDIRECT_URI = process.env.DROPBOX_REDIRECT_URI;
+const CLIENT_ID = process.env.DROPBOX_APP_KEY;
+const CLIENT_SECRET = process.env.DROPBOX_APP_SECRET;
+
+// Step 1: Redirect to Dropbox for authorization
+app.get('/auth', (req, res) => {
+  const authUrl = `${DROPBOX_AUTH_URL}?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`;
+  res.redirect(authUrl);
+});
+
+// Step 2: Handle OAuth2 redirect and exchange authorization code for access token
+app.get('/oauth2redirect', async (req, res) => {
+  const authorizationCode = req.query.code;
+
+  if (!authorizationCode) {
+    return res.status(400).send('Missing authorization code.');
   }
 
   try {
-    // Exchange the code for an access token from Dropbox
-    const response = await axios.post(
-      "https://api.dropboxapi.com/oauth2/token",
-      null,
-      {
-        params: {
-          code: code,
-          grant_type: "authorization_code",
-          client_id: process.env.DROPBOX_CLIENT_ID, // Set these variables in your .env file
-          client_secret: process.env.DROPBOX_CLIENT_SECRET,
-          redirect_uri: process.env.DROPBOX_REDIRECT_URI, // Your redirect URI
-        },
-      }
-    );
+    // Step 3: Exchange authorization code for access token
+    const response = await axios.post(DROPBOX_TOKEN_URL, querystring.stringify({
+      code: authorizationCode,
+      grant_type: 'authorization_code',
+      redirect_uri: REDIRECT_URI,
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET
+    }));
 
-    // Extract the access token from Dropbox's response
-    const accessToken = response.data.access_token;
+    const { access_token, expires_in } = response.data;
 
-    // Send the access token to the Android app
-    res.status(200).json({
-      access_token: accessToken,
-    });
+    // Step 4: Send access token back to the client (you can store it or redirect)
+    // For simplicity, we're redirecting back to the app with the access token in the query string
+    res.redirect(`filconnected://oauth2redirect?access_token=${access_token}`);
   } catch (error) {
-    console.error("Error exchanging code for access token:", error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to exchange code for access token." });
+    console.error('Error exchanging authorization code for access token:', error.response?.data || error.message);
+    res.status(500).send('Error exchanging authorization code.');
   }
 });
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server running on ${process.env.PORT || "http://localhost:5000"}`);
+  console.log(`Server is running on port ${port}`);
 });
