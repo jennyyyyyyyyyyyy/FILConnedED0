@@ -1,49 +1,47 @@
 const express = require("express");
 const axios = require("axios");
-require("dotenv").config(); // Load environment variables
 
 const app = express();
-const port = process.env.PORT || 5000; // Use Render's assigned port or default to 5000 locally
+const port = process.env.PORT || 5000;
 
-// Long-lived access token stored in an environment variable
-const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
+app.get("/oauth2redirect", async (req, res) => {
+  const code = req.query.code;  // Get the authorization code from query params
 
-if (!accessToken) {
-  console.error("Long-lived access token is missing. Please set DROPBOX_ACCESS_TOKEN in your environment variables.");
-  process.exit(1);
-}
+  if (!code) {
+    return res.status(400).json({ error: "Authorization code missing." });
+  }
 
-// Root route
-app.get("/", (req, res) => {
-  res.json({
-    message: "Welcome to the FILConnectED API!",
-    endpoints: {
-      test: "GET /test - Test Dropbox API integration",
-    },
-  });
-});
-
-// Test Dropbox API
-app.get("/test", async (req, res) => {
   try {
+    // Exchange the code for an access token from Dropbox
     const response = await axios.post(
-      "https://api.dropboxapi.com/2/files/list_folder",
-      { path: "" }, // Root folder
+      "https://api.dropboxapi.com/oauth2/token",
+      null,
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
+        params: {
+          code: code,
+          grant_type: "authorization_code",
+          client_id: process.env.DROPBOX_CLIENT_ID,
+          client_secret: process.env.DROPBOX_CLIENT_SECRET,
+          redirect_uri: process.env.DROPBOX_REDIRECT_URI,  // Your redirect URI
         },
       }
     );
-    res.json(response.data);
+
+    // Extract the access token from Dropbox's response
+    const accessToken = response.data.access_token;
+
+    // Log the access token received from Dropbox
+    console.log("Access Token received:", accessToken);
+
+    // Redirect to the mobile app with the access token
+    const redirectUri = filconnected://oauth2redirect?access_token=${accessToken}; // Use your custom scheme
+    res.redirect(redirectUri); // Redirect to the custom URL scheme
   } catch (error) {
-    console.error("Error calling Dropbox API:", error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to call Dropbox API." });
+    console.error("Error exchanging code for access token:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to exchange code for access token." });
   }
 });
 
-// Start the server
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(Server running on ${process.env.PORT || "http://localhost:5000"});
 });
